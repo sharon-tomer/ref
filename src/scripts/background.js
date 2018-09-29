@@ -6,9 +6,9 @@ ext.tabs.onUpdated.addListener((tabId, changeInfo, tabInfo) => {
   let service = getServiceFromUrl(changeInfo.url);
   if(service) {
     let message = {type: 'ref-msg', action: 'prompt-to-add-code'};
-    ext.tabs.query({active: true, currentWindow: true}, function(tabs) {
-      chrome.tabs.sendMessage(tabId, message, () => console.log('todo: handle response from contentscript'));
-    });
+    // ext.tabs.query({active: true, currentWindow: true}, function(tabs) {
+    chrome.tabs.sendMessage(tabId, message, () => console.log('todo: handle response from contentscript'));
+    // });
   }
 });
 

@@ -1,10 +1,57 @@
 .ref-container {
     position: absolute;
-    top: 0px;
-    right: 0px;
-    padding: 10px;
-    border-radius: 30px;
-    background: white;
-    z-index: 2147483647
-    margin: 15px;
+    opacity: 1;
+    top: 10px;
+    max-width: 430px;
+    min-width: auto;
+    position: fixed;
+    right: 10px;
+    border-radius: 4px;
+    box-shadow: rgba(0, 0, 0, 0.5) 0 0 10px;
+    background: #fff;
+    font-size: 100%;
+    font-style: normal !important;
+    overflow: hidden;
+    z-index: 2147483647!important;
+    box-sizing: content-box !important;
+}
+
+.ref-button {
+    min-height: 46px !important;
+    min-width: 230px !important;
+    padding: 0 16px !important;
+    margin: 4px 16px !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+    border: 0 !important;
+    border-radius: 23px !important;
+    background: #ED5050 !important;
+    font-weight: 400 !important;
+    font-size: 16px !important;
+    outline: none;
+    position: relative;
+    cursor: pointer;
+    width: auto;
+    height: auto;
+    text-align: center;
+    text-decoration: none;
+    line-height: 20px !important;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-transform: none !important;
+    color: #fff !important;
+    transition: background-color 0.2s, color 0.2s, border-color 0.2s !important;
+}
+
+.ref-option {
+    background-size: 100%;
+    text-align: center;
+    font-size: 14px;
+    font-family: var(--ebates-font) !important;
+    font-weight: 300 !important;
+    color: #888;
+    cursor: pointer;
+    text-decoration: underline !important;
 }

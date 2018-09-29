@@ -1,5 +1,8 @@
 export default class Notification {
-    constructor(title, description, button) {
+    constructor() {
+    }
+
+    init(title, description, actionButtom, options) {
         this.container = document.createElement('div');
         this.container.className = 'ref-container';
         if(title) {
@@ -10,9 +13,17 @@ export default class Notification {
             this.description = this.buildDescription(description);
             this.container.appendChild(this.description);  
         }
-        if(button) {
-            this.button = this.buildActionButton(button);
-            this.container.appendChild(this.button);
+        if(actionButtom) {
+            this.actionButtom = this.buildActionButton(actionButtom);
+            this.container.appendChild(this.actionButtom);
+        }
+        if(options) {
+            this.optionsContainer = document.createElement('div');
+            let optionElements = this.buildOptionButtons(options);
+            optionElements.forEach(optionElem => {
+                this.optionsContainer.appendChild(optionElem);
+            });
+            this.container.appendChild(this.optionsContainer);
         }
         return this.container;
     }
@@ -21,8 +32,13 @@ export default class Notification {
         return this.container;
     }
 
+    remove() {
+        this.container.parentElement.removeChild(this.container);
+    }
+
     buildActionButton(props) {
         let actionButton = document.createElement('button');
+        actionButton.className = 'ref-button';
         actionButton.onclick = props.onclick;
         actionButton.innerText = props.text;
         return actionButton;
@@ -38,5 +54,14 @@ export default class Notification {
         let description = document.createElement('div');
         description.innerText = descriptionText;
         return description;
+    }
+    buildOptionButtons(options){
+        return options.map(option => {
+            let optionButton = document.createElement('span');
+            optionButton.className = 'ref-option';
+            optionButton.innerText = option.text;
+            optionButton.onclick = option.onclick;
+            return optionButton;
+        });
     }
 }
