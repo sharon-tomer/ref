@@ -19,6 +19,7 @@ export default class Notification {
         }
         if(options) {
             this.optionsContainer = document.createElement('div');
+            this.optionsContainer.className = 'ref-options-container';
             let optionElements = this.buildOptionButtons(options);
             optionElements.forEach(optionElem => {
                 this.optionsContainer.appendChild(optionElem);

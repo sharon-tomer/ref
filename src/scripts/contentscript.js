@@ -6,11 +6,12 @@ function onRequest(request, sender, sendResponse) {
   if (request.action === 'prompt-to-add-code') {
     let prompt = new Notification();
     let onclick = () => console.log('add code clicked');
-    let options = [{text: 'Activate Later', onclick: prompt.remove.bind(prompt)}];
+    let options = [{text: 'Activate Later', onclick: () => prompt.remove()}];
     let promptContainer = prompt.init(false, false, {onclick, text: 'I want free money!'}, options);
     document.body.appendChild(promptContainer);
     sendResponse('success'); 
   }
+  return true;
 }
 
 ext.runtime.onMessage.addListener(onRequest);

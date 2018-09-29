@@ -17,7 +17,8 @@
     "tabs",
     "storage",
     "http://*/*",
-    "https://*/*"
+    "https://*/*",
+    "webNavigation"
   ],
   "options_ui": {
     "page": "options.html"

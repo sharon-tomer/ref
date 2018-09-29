@@ -1,14 +1,12 @@
 import ext from "./utils/ext";
 import {getServiceFromUrl} from './utils/urls';
 
-ext.tabs.onUpdated.addListener((tabId, changeInfo, tabInfo) => {  
-  if(!changeInfo.status === 'complete') return;
-  let service = getServiceFromUrl(changeInfo.url);
+ext.webNavigation.onCompleted.addListener(({tabId, url}) => {  
+  let service = getServiceFromUrl(url);
   if(service) {
+    console.log('service recognized');
     let message = {type: 'ref-msg', action: 'prompt-to-add-code'};
-    // ext.tabs.query({active: true, currentWindow: true}, function(tabs) {
     chrome.tabs.sendMessage(tabId, message, () => console.log('todo: handle response from contentscript'));
-    // });
   }
 });
 
