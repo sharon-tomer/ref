@@ -9,6 +9,7 @@ function onRequest(request, sender, sendResponse) {
     let onclick = () => console.log('add code clicked');
     let prompt = new Notification(title, description, {onclick, text: 'I want free money!'});
     document.body.appendChild(prompt);
+    console.log('here!!!');
     sendResponse('success');
   }
 }
