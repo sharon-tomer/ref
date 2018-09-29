@@ -1,33 +1,15 @@
 import ext from "./utils/ext";
-
-var extractTags = () => {
-  var url = document.location.href;
-  if(!url || !url.match(/^http/)) return;
-
-  var data = {
-    title: "",
-    description: "",
-    url: document.location.href
-  }
-
-  var ogTitle = document.querySelector("meta[property='og:title']");
-  if(ogTitle) {
-    data.title = ogTitle.getAttribute("content")
-  } else {
-    data.title = document.title
-  }
-
-  var descriptionTag = document.querySelector("meta[property='og:description']") || document.querySelector("meta[name='description']")
-  if(descriptionTag) {
-    data.description = descriptionTag.getAttribute("content")
-  }
-
-  return data;
-}
+import Notification from './components/Notification';
 
 function onRequest(request, sender, sendResponse) {
-  if (request.action === 'process-page') {
-    sendResponse(extractTags())
+  if(!request.type === 'ref-msg') return;
+  if (request.action === 'prompt-to-add-code') {
+    let title = 'Add your referral code to get some $$$'
+    let description = false;
+    let onclick = () => console.log('add code clicked');
+    let prompt = new Notification(title, description, {onclick, text: 'I want free money!'});
+    document.body.appendChild(prompt);
+    sendResponse('success');
   }
 }
 
