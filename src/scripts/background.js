@@ -13,12 +13,16 @@ ext.webNavigation.onCompleted.addListener(({tabId, url}) => {
 ext.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if(request.type === APP_ID) {
     switch (message.action) {
-      case ACTIONS.GET_CODE: {
+      case ACTIONS.GET_CODE: 
         getCode(message.service)
-        .then(res => sendResponse(res));
-      }
+          .then(res => sendResponse(res));
+        break;
+
+      default: 
+        throw 'Unknown action in message: ' + message;
     } 
   }
+  return true;
 });
 
 function getCode(service) {

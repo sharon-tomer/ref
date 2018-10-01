@@ -1,4 +1,6 @@
 export const APP_ID = 'ref-extension';
+export const SUCCESS = 'success';
+export const FAILED = 'failed';
 
 export const supportedServices = [
     {name: 'uber', id: 'uber', regex: /^.*\buber.com\b.*$/}
@@ -45,5 +47,3 @@ export const SERVICES = {
         REF_XPATH: "//div/div[contains(text(), 'https://www.uber.com/invite/')]"
     }
 };
-export const SUCCESS = 'success';
-export const FAILED = 'failed';

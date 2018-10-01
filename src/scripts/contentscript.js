@@ -14,7 +14,6 @@ function onRequest(request, sender, sendResponse) {
 
 function buildAddCodePrompt (service) {
   let prompt = new Notification();
-  let res = {};
   let promptTitle = `
     ${COPY.UI.PROMPTS.ADD_CODE.TITLE_PRE}
     ${service.name}
