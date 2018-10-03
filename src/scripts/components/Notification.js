@@ -3,6 +3,9 @@ export default class Notification {
     }
 
     init(title, description, actionButtom, options) {
+        if(this.container && this.container.parentElement) {
+            this.container.parentNode.removeChild(this.container);
+        }
         this.container = document.createElement('div');
         this.container.className = 'ref-container';
         if(title) {
@@ -53,7 +56,8 @@ export default class Notification {
 
     buildDescription(descriptionText) {
         let description = document.createElement('div');
-        description.innerText = descriptionText;
+        description.className = 'ref-description';
+        description.innerHTML = descriptionText;
         return description;
     }
     buildOptionButtons(options){

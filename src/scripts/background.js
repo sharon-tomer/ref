@@ -1,6 +1,9 @@
-import ext from "./utils/ext";
+import ext from './utils/ext';
 import {getServiceFromUrl} from './utils/urls';
-import {ACTIONS, APP_ID, SERVICES, SUCCESS, FAILED} from './utils/constants';
+import {ACTIONS, APP_ID} from './utils/constants';
+import {createNewTab, sendMessageToTab} from './utils/browser';
+import endpoints from './utils/endpoints';
+import {postData} from './utils/xhr';
 
 ext.webNavigation.onCompleted.addListener(({tabId, url}) => {  
   let service = getServiceFromUrl(url);
@@ -12,41 +15,50 @@ ext.webNavigation.onCompleted.addListener(({tabId, url}) => {
 
 ext.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if(request.type === APP_ID) {
-    switch (message.action) {
-      case ACTIONS.GET_CODE: 
-        getCode(message.service)
-          .then(res => sendResponse(res));
+    console.log('got request:', request.action);
+    switch (request.action) {
+      case ACTIONS.GET_CODE:  
+        getCode(request.service)
+          .then(result => sendResponse({success: !!result, code: result}));
         break;
 
       default: 
-        throw 'Unknown action in message: ' + message;
+        throw 'Unknown action in message: ' + request;
     } 
   }
-  return true;
+  return true; 
 });
 
-function getCode(service) {
-  return ext.tabs.create({ url: SERVICES[service.id].REF_URL, active: false })
-    .then(tab => stringifyFunc(tab.id, SERVICES[service.id].XPATH))
-    .then(result => result && result.length ? registerLink(result, service) && SUCCESS : FAILED)
-    .catch(() => FAILED);
+async function getCode(service) {
+  console.log('getting code...');
+  let newTab = await createNewTab(service.CODE_URL, false);
+  let response = await sendScrapingRequest(newTab.id, service);
+  ext.tabs.remove(newTab.id);
+  if(response && response.code)
+    return await saveNewCode(response.code);
+  else return false;
 }
 
-function scrapeReferralLink(xpath) {
-  var xpathResults = document.evaluate(xpath, document.body);
-  var elem = refXpath.iterateNext();
-  if(elem) return elem.innerText;
-  return false;
+async function sendScrapingRequest(tabId, service) {
+  let message = {type: APP_ID, action: ACTIONS.SCRAPE_CODE, service};
+  console.log('sending scraping request to tab ', tabId, 'for service: ', service);
+  return sendMessageToTab(tabId, message);
 }
 
-function registerLink(link, service) { // todo 
-  console.log('link:', link);
-  return true;
-}
-
-function stringifyFunc(tabId, xpath) {
-  return ext.tabs.executeScript(tabId, {code: scrapeReferralLink.toString()})
-    .then(() => {
-      return ext.tabs.executeScript(tabId, {code: `scrapeReferralLink(${xpath});`});
+async function saveNewCode(code) {
+  if(typeof code !== 'string') {
+    console.log('couldn\'t scrape the code');
+    return false;
+  }
+  console.log('got code:', code);
+  return postData(endpoints.code.new, {code})
+    .then(res => {
+      console.log('server replyed with: ', res);
+      if(res.code) return res.code;
+      else {
+        console.log('error posting new code: ' + res.error || 'unspecified error');
+        return false; 
+      }
     });
 }
+
