@@ -50,7 +50,7 @@ export default class Notification {
 
     buildTitle(titleText) {
         let title = document.createElement('div');
-        title.className = 'ref-title';
+        title.className = 'ref-header';
         title.innerText = titleText;
         return title;
     }

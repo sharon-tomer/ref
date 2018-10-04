@@ -3,11 +3,55 @@
     font-family: 'Roboto';
     font-style: normal;
     font-weight: 400;
-    src: local('Roboto Regular'), local('Roboto-Regular'), url('chrome-extension://__MSG_@@extension_id__/fonts/Roboto-Regular.ttf') format('truetype');
+    src: local('Roboto Regular'), local('Roboto-Regular'), url('chrome-extension://__MSG_@@extension_id__/fonts/Roboto-Regular.ttf'), url('https://fonts.googleapis.com/css?family=Roboto') format('truetype');
 }
 
 $font-stack: "Roboto", "Roboto-Regular", Arial, Helvetica, sans-serif;
-$font-stack-medium: "Roboto-", Arial, Helvetica, sans-serif;
+
+.ref-default {
+    direction: ltr;
+}
+
+.ref-header {
+    @extend .ref-default;
+    font-family: $font-stack;
+    letter-spacing: 0.25px;
+    font-size: 34px;
+    font-weight: 400;
+    padding: 20px 20px 10px 20px;
+}
+
+.ref-subtitle {
+    @extend .ref-default;
+    font-family: $font-stack;
+    letter-spacing: 0.15px;
+    font-size: 16px;
+    font-weight: 400;
+}
+
+.ref-body {
+    @extend .ref-default;
+    font-family: $font-stack;
+    letter-spacing: 0px;
+    font-size: 24px;
+    font-weight: 400;
+}
+
+.ref-button {
+    @extend .ref-default;
+    font-family: $font-stack;
+    letter-spacing: 0.75px;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.ref-caption {
+    @extend .ref-default;
+    font-family: $font-stack;
+    letter-spacing: 0.4px;
+    font-size: 12px;
+    font-weight: 400;
+}
 
 .ref-container {
     @extend .ref-default;
@@ -64,8 +108,6 @@ $font-stack-medium: "Roboto-", Arial, Helvetica, sans-serif;
     @extend .ref-button;
     background-size: 100%;
     text-align: center;
-    font-size: 14px;
-    font-weight: 300 !important;
     color: #888;
     cursor: pointer;
     text-decoration: underline !important;
@@ -77,18 +119,15 @@ $font-stack-medium: "Roboto-", Arial, Helvetica, sans-serif;
     padding: 5px 0;
 }
 
-.ref-default {
-    direction: ltr;
-}
-
 .ref-description {
     @extend .ref-default;
     @extend .ref-body;
-    padding: 10px;
+    padding: 20px;
+    word-break: break-word;
 }
 
 
-////////
+
 .spinner-container {
     background: #333;
     padding: 0;
@@ -105,7 +144,7 @@ $font-stack-medium: "Roboto-", Arial, Helvetica, sans-serif;
   $spinner-width: 80px;
   $spinner-height: 80px;
   $spin-time: 2s;
-  $spinner-color: #fff;
+  $spinner-color: rgb(0, 0, 0);
   .spinner {
       display: inline-block;
     position: relative;
@@ -240,37 +279,3 @@ $font-stack-medium: "Roboto-", Arial, Helvetica, sans-serif;
       }
   }
 
-.ref-header {
-    font-family: $font-stack;
-    letter-spacing: 0.15px;
-    font-size: 20px;
-    font-weight: 500;
-}
-
-.ref-subtitle {
-    font-family: $font-stack;
-    letter-spacing: 0.15px;
-    font-size: 16px;
-    font-weight: 400;
-}
-
-.ref-body {
-    font-family: $font-stack;
-    letter-spacing: 0.5px;
-    font-size: 16px;
-    font-weight: 400;
-}
-
-.ref-button {
-    font-family: $font-stack;
-    letter-spacing: 0.75px;
-    font-size: 14px;
-    font-weight: 500;
-}
-
-.ref-caption {
-    font-family: $font-stack;
-    letter-spacing: 0.4px;
-    font-size: 12px;
-    font-weight: 400;
-}

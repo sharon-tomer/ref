@@ -11,9 +11,10 @@ ext.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
   let url = tab.url;
   let service = getServiceFromUrl(url);
   if(service) {
+    promptMessage = shouldPromptInTab(url, service);
+    if(!promptMessage) return;
     console.log('ref' + 'prompting to add code in service:', service);
-    let message = {type: APP_ID, action: ACTIONS.PROMPT_TO_ADD_CODE, service};
-    chrome.tabs.sendMessage(tabId, message, () => console.log('ref' + 'todo: handle response from contentscript'));
+    chrome.tabs.sendMessage(tabId, promptMessage, () => console.log('ref' + 'todo: handle response from contentscript'));
   }
 });
 
@@ -66,5 +67,17 @@ async function saveNewCode(code) {
         return false; 
       }
     });
+}
+
+function shouldPromptInTab(url, service) {
+  let res = false;
+  if(url.match(service.REGISTERATION_FORM_REGEX)) {
+    res = {type: APP_ID, action: ACTIONS.PROMPT_TO_GET_REWARD, service};
+  } else if(url.match(service.MEMBER_URL_REGEX)){
+    res = {type: APP_ID, action: ACTIONS.PROMPT_TO_ADD_CODE, service};
+  } else if(url.match(service.NON_MEMBER_URL_REGEX)) {
+    res = {type: APP_ID, action: ACTIONS.PROMPT_TO_GET_REWARD, service};
+  }
+  return res;
 }
 

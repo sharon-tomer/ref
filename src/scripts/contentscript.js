@@ -53,8 +53,9 @@ class Referral {
     if(isSuccessful) {
       promptTitle = COPY.UI.PROMPTS.ADDED_SUCCESSFULLY.TITLE;
       promptDescription = 
-        `${code}` + 
-        `${COPY.UI.PROMPTS.ADDED_SUCCESSFULLY.DESCRIPTION}`;
+        `${COPY.UI.PROMPTS.ADDED_SUCCESSFULLY.DESCRIPTION1}` +
+        `<b>${code}</b>` + 
+        `${COPY.UI.PROMPTS.ADDED_SUCCESSFULLY.DESCRIPTION2}`;
       promptOptions = [{
         text: COPY.UI.PROMPTS.ADDED_SUCCESSFULLY.CLOSE_BUTTON, 
         onclick: () => this.notification.remove()

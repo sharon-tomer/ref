@@ -2,6 +2,7 @@ export const APP_ID = 'ref-extension';
 
 export const ACTIONS = {
     PROMPT_TO_ADD_CODE: 'prompt-to-add-code',
+    PROMPT_TO_GET_REWARD: 'prompt-to-get-reward',
     GET_CODE: 'get-code',
     SCRAPE_CODE: 'scrape-code'
 };
@@ -21,7 +22,8 @@ export const COPY = {
             },
             ADDED_SUCCESSFULLY: {
                 TITLE: 'And... Done!',
-                DESCRIPTION: 'your referral code was saved and will be shared with your friends & random internet people.\n You will automaticlly be rewarded for anyone who uses your code!',
+                DESCRIPTION1: 'your referral code ',
+                DESCRIPTION2: ' will be shared with your friends & random internet people.\n You will automaticlly be rewarded for anyone who redeems it!',
                 CLOSE_BUTTON: 'Sweet!'
             },
             FAILED_ADDING: {
@@ -36,7 +38,9 @@ export const SERVICES = {
     uber: {
         NAME: 'Uber',
         ID: 'uber',
-        URL_REGEX: /^.*\buber.com\b.*$/,
+        MEMBER_URL_REGEX: /^.*\briders.uber.com\b.*$/,
+        NON_MEMBER_URL_REGEX:  /^.*\b(auth).uber.com\b.*$/,
+        REGISTERATION_FORM_REGEX: /^(.*)(auth\.uber\.com\/login)(.*?)(uber_client_name=riderSignUp)(.*?)$/,
         CODE_URL: 'https://riders.uber.com/invite',
         CODE_XPATH: "//div/div[contains(text(), 'https://www.uber.com/invite/')]",
         COPY: {
