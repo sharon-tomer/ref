@@ -42,7 +42,7 @@ export default class Notification {
 
     buildActionButton(props) {
         let actionButton = document.createElement('button');
-        actionButton.className = 'ref-button';
+        actionButton.className = 'ref-add-code-button';
         actionButton.onclick = props.onclick;
         actionButton.innerText = props.text;
         return actionButton;
@@ -50,6 +50,7 @@ export default class Notification {
 
     buildTitle(titleText) {
         let title = document.createElement('div');
+        title.className = 'ref-title';
         title.innerText = titleText;
         return title;
     }
@@ -60,6 +61,7 @@ export default class Notification {
         description.innerHTML = descriptionText;
         return description;
     }
+
     buildOptionButtons(options){
         return options.map(option => {
             let optionButton = document.createElement('span');

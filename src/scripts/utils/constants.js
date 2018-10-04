@@ -20,8 +20,8 @@ export const COPY = {
                 LEAVE_ME_ALONE: 'Leave me alone'
             },
             ADDED_SUCCESSFULLY: {
-                TITLE_PART1: 'Success! your referral code ',
-                TITLE_PART2: 'was saved and will be shared with your friends & random internet people.\n You will automaticlly be rewarded for anyone who uses your code!',
+                TITLE: 'And... Done!',
+                DESCRIPTION: 'your referral code was saved and will be shared with your friends & random internet people.\n You will automaticlly be rewarded for anyone who uses your code!',
                 CLOSE_BUTTON: 'Sweet!'
             },
             FAILED_ADDING: {

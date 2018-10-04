@@ -33,7 +33,7 @@ class Referral {
   buildAddCodePrompt (service) {
     let promptDescription = 
       `${COPY.UI.PROMPTS.ADD_CODE.TITLE_PRE}` + 
-      `${service.name}` + 
+      `${service.NAME}` + 
       `${COPY.UI.PROMPTS.ADD_CODE.TITLE_MID}` + 
       `<b>${service.COPY.REWARD}</b>?`;
     let promptActionButton = {
@@ -49,12 +49,12 @@ class Referral {
   }
 
   buildCodeRetrieved(isSuccessful, code) {
-    let promptDescription, promptOptions;
+    let promptDescription, promptOptions, promptTitle;
     if(isSuccessful) {
+      promptTitle = COPY.UI.PROMPTS.ADDED_SUCCESSFULLY.TITLE;
       promptDescription = 
-        `${COPY.UI.PROMPTS.ADDED_SUCCESSFULLY.TITLE_PART1}` + 
         `${code}` + 
-        `${COPY.UI.PROMPTS.ADDED_SUCCESSFULLY.TITLE_PART1}`;
+        `${COPY.UI.PROMPTS.ADDED_SUCCESSFULLY.DESCRIPTION}`;
       promptOptions = [{
         text: COPY.UI.PROMPTS.ADDED_SUCCESSFULLY.CLOSE_BUTTON, 
         onclick: () => this.notification.remove()
@@ -66,10 +66,12 @@ class Referral {
         onclick: () => this.notification.remove()
       }];
     }
-    return this.notification.init(false, promptDescription, false, promptOptions);
+    return this.notification.init(promptTitle, promptDescription, false, promptOptions);
   }
   
   onAddCodeClick(service) {
+    this.notificationContainer = this.notification.init(false, '<i class="spinner"></i>', false, false);
+    document.body.appendChild(this.notificationContainer);
     sendMessageToBackground({action: ACTIONS.GET_CODE, service})
       .then(this.handleAddCodeResponse.bind(this));
   }

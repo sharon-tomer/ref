@@ -1,3 +1,14 @@
+
+@font-face {
+    font-family: 'Roboto';
+    font-style: normal;
+    font-weight: 400;
+    src: local('Roboto Regular'), local('Roboto-Regular'), url('chrome-extension://__MSG_@@extension_id__/fonts/Roboto-Regular.ttf') format('truetype');
+}
+
+$font-stack: "Roboto", "Roboto-Regular", Arial, Helvetica, sans-serif;
+$font-stack-medium: "Roboto-", Arial, Helvetica, sans-serif;
+
 .ref-container {
     @extend .ref-default;
     position: absolute;
@@ -17,8 +28,9 @@
     box-sizing: content-box !important;
 }
 
-.ref-button {
+.ref-add-code-button {
     @extend .ref-default;
+    @extend .ref-button;
     min-height: 46px !important;
     min-width: 230px !important;
     padding: 0 16px !important;
@@ -42,17 +54,17 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    text-transform: none !important;
-    color: #fff !important;
+    text-transform: none ;
     transition: background-color 0.2s, color 0.2s, border-color 0.2s !important;
+    text-transform: uppercase !important;
 }
 
 .ref-option {
     @extend .ref-default;
+    @extend .ref-button;
     background-size: 100%;
     text-align: center;
     font-size: 14px;
-    font-family: var(--ebates-font) !important;
     font-weight: 300 !important;
     color: #888;
     cursor: pointer;
@@ -71,5 +83,194 @@
 
 .ref-description {
     @extend .ref-default;
+    @extend .ref-body;
     padding: 10px;
+}
+
+
+////////
+.spinner-container {
+    background: #333;
+    padding: 0;
+    margin: 0;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  /*
+  Spinner Style
+  */
+  $spinner-width: 80px;
+  $spinner-height: 80px;
+  $spin-time: 2s;
+  $spinner-color: #fff;
+  .spinner {
+      display: inline-block;
+    position: relative;
+    vertical-align: middle;
+      width: $spinner-width;
+      height: $spinner-height;
+      &:before, &:after {
+          display: inline-block;
+      content:"";
+      position:absolute;
+          background: $spinner-color;
+      }
+      &:before {
+          animation: $spin-time worm1 infinite;
+      }
+      &:after {
+          animation: $spin-time worm2 infinite;
+      }
+  }
+  
+  @keyframes worm1 {
+      0% {
+          top: 0;
+          right: $spinner-width/3*2;
+          bottom: $spinner-height/3*2;
+          left: 0;
+      }
+      12.5% {
+          top: 0;
+          right: $spinner-width/3*2;
+          bottom: 0;
+          left: 0;
+      }
+      25% {
+          top: $spinner-height/3*2;
+          right: $spinner-width/3*2;
+          bottom: 0;
+          left: 0;
+      }
+      37.5% {
+          top: $spinner-height/3*2;
+          right: 0;
+          bottom: 0;
+          left: 0;
+      }
+      50% {
+          top: $spinner-height/3*2;
+          right: 0;
+          bottom: 0;
+          left: $spinner-width/3*2;
+      }
+      62.5% {
+          top: 0;
+          right: 0;
+          bottom: 0;
+          left: $spinner-width/3*2;
+      }
+      75% {
+          top: 0;
+          right: 0;
+          bottom: $spinner-height/3*2;
+          left: $spinner-width/3*2;
+      }
+      87.5% {
+          top: 0;
+          right: 0;
+          bottom: $spinner-height/3*2;
+          left: 0;
+      }
+      100% {
+          top: 0;
+          right: $spinner-width/3*2;
+          bottom: $spinner-height/3*2;
+          left: 0;
+      }
+  }
+  
+  @keyframes worm2 {
+      0% {
+          top: $spinner-height/3*2;
+          right: 0;
+          bottom: 0;
+          left: $spinner-width/3*2;
+      }
+      12.5% {
+          top: 0;
+          right: 0;
+          bottom: 0;
+          left: $spinner-width/3*2;
+      }
+      25% {
+          top: 0;
+          right: 0;
+          bottom: $spinner-height/3*2;
+          left: $spinner-width/3*2;
+      }
+      37.5% {
+          top: 0;
+          right: 0;
+          bottom: $spinner-height/3*2;
+          left: 0;
+      }
+      50% {
+          top: 0;
+          right: $spinner-width/3*2;
+          bottom: $spinner-height/3*2;
+          left: 0;
+      }
+      62.5% {
+          top: 0;
+          right: $spinner-width/3*2;
+          bottom: 0;
+          left: 0;
+      }
+      75% {
+          top: $spinner-height/3*2;
+          right: $spinner-width/3*2;
+          bottom: 0;
+          left: 0;
+      }
+      87.5% {
+          top: $spinner-height/3*2;
+          right: 0;
+          bottom: 0;
+          left: 0;
+      }
+      100% {
+          top: $spinner-height/3*2;
+          right: 0;
+          bottom: 0;
+          left: $spinner-width/3*2;
+      }
+  }
+
+.ref-header {
+    font-family: $font-stack;
+    letter-spacing: 0.15px;
+    font-size: 20px;
+    font-weight: 500;
+}
+
+.ref-subtitle {
+    font-family: $font-stack;
+    letter-spacing: 0.15px;
+    font-size: 16px;
+    font-weight: 400;
+}
+
+.ref-body {
+    font-family: $font-stack;
+    letter-spacing: 0.5px;
+    font-size: 16px;
+    font-weight: 400;
+}
+
+.ref-button {
+    font-family: $font-stack;
+    letter-spacing: 0.75px;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.ref-caption {
+    font-family: $font-stack;
+    letter-spacing: 0.4px;
+    font-size: 12px;
+    font-weight: 400;
 }

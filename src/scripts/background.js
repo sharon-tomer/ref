@@ -6,7 +6,7 @@ import endpoints from './utils/endpoints';
 import {postData} from './utils/xhr';
         
 ext.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
-  let {status} = changeInfo;
+  let {status} = changeInfo;  
   if(status !== 'complete') return;  
   let url = tab.url;
   let service = getServiceFromUrl(url);
@@ -17,7 +17,7 @@ ext.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
   }
 });
 
-ext.runtime.onMessage.addListener((request, sender, sendResponse) => {
+ext.runtime.onMessage.addListener((request, sender, sendResponse) => { 
   if(request.type === APP_ID) {
     console.log('ref' + 'got request:', request.action);
     switch (request.action) {
@@ -31,7 +31,7 @@ ext.runtime.onMessage.addListener((request, sender, sendResponse) => {
     } 
     return true; 
   }
-});
+}); 
 
 async function getCode(service) {
   console.log('ref' + 'getting code...');
