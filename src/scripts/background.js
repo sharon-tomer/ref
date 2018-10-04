@@ -4,18 +4,22 @@ import {ACTIONS, APP_ID} from './utils/constants';
 import {createNewTab, sendMessageToTab} from './utils/browser';
 import endpoints from './utils/endpoints';
 import {postData} from './utils/xhr';
-
-ext.webNavigation.onCompleted.addListener(({tabId, url}) => {  
+        
+ext.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
+  let {status} = changeInfo;
+  if(status !== 'complete') return;  
+  let url = tab.url;
   let service = getServiceFromUrl(url);
   if(service) {
+    console.log('ref' + 'prompting to add code in service:', service);
     let message = {type: APP_ID, action: ACTIONS.PROMPT_TO_ADD_CODE, service};
-    chrome.tabs.sendMessage(tabId, message, () => console.log('todo: handle response from contentscript'));
+    chrome.tabs.sendMessage(tabId, message, () => console.log('ref' + 'todo: handle response from contentscript'));
   }
 });
 
 ext.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if(request.type === APP_ID) {
-    console.log('got request:', request.action);
+    console.log('ref' + 'got request:', request.action);
     switch (request.action) {
       case ACTIONS.GET_CODE:  
         getCode(request.service)
@@ -25,15 +29,17 @@ ext.runtime.onMessage.addListener((request, sender, sendResponse) => {
       default: 
         throw 'Unknown action in message: ' + request;
     } 
+    return true; 
   }
-  return true; 
 });
 
 async function getCode(service) {
-  console.log('getting code...');
+  console.log('ref' + 'getting code...');
   let newTab = await createNewTab(service.CODE_URL, false);
   let response = await sendScrapingRequest(newTab.id, service);
+  console.log('ref' + 'got - new tab:', newTab, 'response:', response, 'closing tab...');
   ext.tabs.remove(newTab.id);
+  console.log('ref' + 'tab closed.');
   if(response && response.code)
     return await saveNewCode(response.code);
   else return false;
@@ -41,22 +47,22 @@ async function getCode(service) {
 
 async function sendScrapingRequest(tabId, service) {
   let message = {type: APP_ID, action: ACTIONS.SCRAPE_CODE, service};
-  console.log('sending scraping request to tab ', tabId, 'for service: ', service);
+  console.log('ref' + 'sending scraping request to tab ', tabId, 'for service: ', service);
   return sendMessageToTab(tabId, message);
 }
 
 async function saveNewCode(code) {
   if(typeof code !== 'string') {
-    console.log('couldn\'t scrape the code');
+    console.log('ref' + 'couldn\'t scrape the code');
     return false;
   }
-  console.log('got code:', code);
+  console.log('ref' + 'got code:', code);
   return postData(endpoints.code.new, {code})
     .then(res => {
-      console.log('server replyed with: ', res);
+      console.log('ref' + 'server replyed with: ', res);
       if(res.code) return res.code;
       else {
-        console.log('error posting new code: ' + res.error || 'unspecified error');
+        console.log('ref' + 'error posting new code: ' + res.error || 'unspecified error');
         return false; 
       }
     });

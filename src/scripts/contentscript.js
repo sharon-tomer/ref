@@ -19,11 +19,13 @@ class Referral {
         sendResponse('success'); 
         break;
       case ACTIONS.SCRAPE_CODE:
-        console.log('scrapping for service: ', request.service);
+        console.log('ref' + 'scrapping for service: ', request.service);
         let code = this.scrapeTextByXpath(request.service.CODE_XPATH);
-        console.log('code: ', code);
+        console.log('ref' + 'code: ', code);
         sendResponse({code});
         break;
+      default:
+        console.log('ref' + 'unknown action:', request.action);
     }
     return true;
   }
@@ -41,7 +43,7 @@ class Referral {
     let promptOptions = [{
       text: COPY.UI.PROMPTS.ADD_CODE.ACTIVATE_LATER, 
       onclick: () => this.notification.remove()
-    }];
+    }]; 
   
     return this.notification.init(false, promptDescription, promptActionButton, promptOptions);
   }
@@ -69,23 +71,25 @@ class Referral {
   
   onAddCodeClick(service) {
     sendMessageToBackground({action: ACTIONS.GET_CODE, service})
-    .then(this.handleAddCodeResponse.bind(this));
+      .then(this.handleAddCodeResponse.bind(this));
   }
   
   handleAddCodeResponse(response) {
-    console.log('got code response from background: ', response);
+    console.log('ref' + 'got code response from background: ', response);
     if(response.success) {
       this.notificationContainer = this.buildCodeRetrieved(true, response.code);
     } else {
       this.notificationContainer = this.buildCodeRetrieved(false);
-      console.log('Failed fetching code.');
+      console.log('ref' + 'Failed fetching code.');
     }
     document.body.appendChild(this.notificationContainer);
   }
   
   scrapeTextByXpath(xpath) {
+    console.log('ref' + 'scraping by xpath: ', xpath)
     var xpathResults = document.evaluate(xpath, document.body);
     var elem = xpathResults.iterateNext();
+    console.log('ref' + 'elem found:', elem);
     if(elem) return elem.innerText;
     return false;
   }
