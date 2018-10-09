@@ -1,12 +1,15 @@
 import ext from "./utils/ext";
 import Notification from './components/Notification';
 import {ACTIONS, COPY, APP_ID} from './utils/constants';
-import {sendMessageToBackground} from './utils/browser';
+import {sendMessageToBackground, findByXpath} from './utils/browser';
+import Navigator from './utils/navigator';
+import serviceActions from './utils/serviceactions';
 
 class Referral {
   constructor(){
     this.notification = new Notification();
     this.notificationContainer = null;
+    this.navigator = new Navigator();
     ext.runtime.onMessage.addListener(this.onRequest.bind(this));
   };
 
@@ -19,11 +22,20 @@ class Referral {
         sendResponse('success'); 
         break;
       case ACTIONS.SCRAPE_CODE:
-        console.log('ref' + 'scrapping for service: ', request.service);
         let code = this.scrapeTextByXpath(request.service.CODE_XPATH);
-        console.log('ref' + 'code: ', code);
         sendResponse({code});
         break;
+      case ACTIONS.PROMPT_TO_GET_REWARD_ON_REGISTERATION:
+        this.notificationContainer = this.buildGetRewardOnRegisterationPrompt(request.service);
+        document.body.appendChild(this.notificationContainer);
+        sendResponse('success'); 
+      break;
+
+      case ACTIONS.PROMPT_TO_GET_REWARD:
+        this.notificationContainer = this.buildGetRewardPrompt(request.service);
+        document.body.appendChild(this.notificationContainer);
+        sendResponse('success'); 
+      break;
       default:
         console.log('ref' + 'unknown action:', request.action);
     }
@@ -35,7 +47,7 @@ class Referral {
       `${COPY.UI.PROMPTS.ADD_CODE.TITLE_PRE}` + 
       `${service.NAME}` + 
       `${COPY.UI.PROMPTS.ADD_CODE.TITLE_MID}` + 
-      `<b>${service.COPY.REWARD}</b>?`;
+      `<b>${service.COPY.REFER_REWARD}</b>?`;
     let promptActionButton = {
       onclick: () => this.onAddCodeClick(service), 
       text: COPY.UI.PROMPTS.ADD_CODE.ACTIVATE_NOW
@@ -45,6 +57,57 @@ class Referral {
       onclick: () => this.notification.remove()
     }]; 
   
+    return this.notification.init(false, promptDescription, promptActionButton, promptOptions);
+  }
+
+  buildGetRewardPrompt(service) {
+    let promptDescription = 
+      `${COPY.UI.PROMPTS.GET_REWARD.TITLE_PRE}` + 
+      `${service.NAME}` + 
+      `${COPY.UI.PROMPTS.GET_REWARD.TITLE_MID}` + 
+      `<b>${service.COPY.REFERRED_REWARD}</b>` +
+      `${COPY.UI.GET_REWARD.TITLE_POST}`;
+    let promptActionButton = {
+      onclick: () => this.onAddCodeClick(service), 
+      text: COPY.UI.PROMPTS.GET_REWARD.ACTIVATE_NOW
+    };
+    let promptOptions = [
+      {
+        text: COPY.UI.PROMPTS.GET_REWARD.ACTIVATE_LATER, 
+        onclick: () => this.notification.remove()
+      },
+      {
+        text: COPY.UI.PROMPTS.GET_REWARD.LEAVE_ME_ALONE,
+        // todo: update background 
+        onclick: () => this.notification.remove()
+      },
+      {
+        text: COPY.UI.PROMPTS.GET_REWARD.HAVE_AN_ACCOUNT,
+        // todo: update background
+        onclick: () => this.notification.remove()
+      }
+    ]; 
+  
+    return this.notification.init(false, promptDescription, promptActionButton, promptOptions);
+  }
+
+  buildGetRewardOnRegisterationPrompt(service) {
+    let promptDescription = 
+      `${COPY.UI.PROMPTS.GET_REWARD_ON_REGISTERATION.TITLE_PRE}` + 
+      `${service.COPY.REFERRED_REWARD}` + 
+      `${COPY.UI.PROMPTS.GET_REWARD.TITLE_POST}`;
+    let testCode = 'testCode'; // todo: remove
+    let promptActionButton = {
+      onclick: () => this.applyCode(service, testCode), 
+      text: COPY.UI.PROMPTS.GET_REWARD.ACTIVATE_NOW
+    };
+    let promptOptions = [
+      {
+        text: COPY.UI.PROMPTS.GET_REWARD.LEAVE_ME_ALONE, 
+        //todo: update background
+        onclick: () => this.notification.remove()
+      }
+    ]; 
     return this.notification.init(false, promptDescription, promptActionButton, promptOptions);
   }
 
@@ -76,6 +139,23 @@ class Referral {
     sendMessageToBackground({action: ACTIONS.GET_CODE, service})
       .then(this.handleAddCodeResponse.bind(this));
   }
+
+  onOptOutClick(service) {
+    this.notificationContainer = this.notification.init(false, COPY.UI.PROMPTS.OPT_OUT.DESCRIPTION, false, false);
+    sendMessageToBackground({action: ACTIONS.OPT_OUT, service});
+  }
+
+  onNavToRewardLinkClick(service) {
+    sendMessageToBackground({action: ACTIONS.NAV_TO_REF_LINK, service})
+      .then(code => this.injectCode(service, code))
+      .then(this.promptCodeAdded);
+  }
+
+  onHaveAccountClick(service) {
+    // todo
+    // sendMessageToBackground({action: ACTIONS.HAS_ACCOUNT, service})
+    //   .then(this.handleAddCodeResponse.bind(this));
+  }
   
   handleAddCodeResponse(response) {
     console.log('ref' + 'got code response from background: ', response);
@@ -89,12 +169,15 @@ class Referral {
   }
   
   scrapeTextByXpath(xpath) {
-    console.log('ref' + 'scraping by xpath: ', xpath)
-    var xpathResults = document.evaluate(xpath, document.body);
-    var elem = xpathResults.iterateNext();
+    var elem = findByXpath(xpath);
     console.log('ref' + 'elem found:', elem);
     if(elem) return elem.innerText;
     return false;
+  }
+
+  applyCode(service, code) {
+    let codeInjectionActions = serviceActions[service.ID].buildCodeInjectionActions(code);
+    this.navigator.exec(codeInjectionActions, document);
   }
 }
 

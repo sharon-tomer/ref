@@ -28,3 +28,76 @@ export function createNewTab (url, active) {
         });
     });
 }
+
+function fallbackCopyTextToClipboard(text) {
+    var textArea = document.createElement("textarea");
+    textArea.value = text;
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+  
+    try {
+      var successful = document.execCommand('copy');
+      var msg = successful ? 'successful' : 'unsuccessful';
+      console.log('Fallback: Copying text command was ' + msg);
+    } catch (err) {
+      console.error('Fallback: Oops, unable to copy', err);
+    }
+  
+    document.body.removeChild(textArea);
+  }
+
+  export function copyTextToClipboard(text) {
+    if (!navigator.clipboard) {
+      fallbackCopyTextToClipboard(text);
+      return;
+    }
+    navigator.clipboard.writeText(text).then(function() {
+      console.log('Async: Copying to clipboard was successful!');
+    }, function(err) {
+      console.error('Async: Could not copy text: ', err);
+    });
+  }
+
+  export function setElemValueToText(elem, text) {
+    elem.focus();
+    elem.select();
+    
+    var val = elem.value;
+    var endIndex;
+    var range;
+    var doc = elem.ownerDocument;
+    if (typeof elem.selectionStart === 'number' &&
+        typeof elem.selectionEnd === 'number') {
+        endIndex = elem.selectionEnd;
+        elem.value = val.slice(0, endIndex) + text + val.slice(endIndex);
+        elem.selectionStart = elem.selectionEnd = endIndex + text.length;
+    } else if (doc.selection !== 'undefined' && doc.selection.createRange) {
+        range = doc.selection.createRange();
+        range.collapse(false);
+        range.text = text;
+        range.select();
+    }
+  }
+
+  export function findByXpath(xpath) { // assuming only 1 result
+    var xpathResults = document.evaluate(xpath, document.body);
+    return xpathResults.iterateNext() || false;
+  }
+
+  export async function asyncClick(elem) {
+      return new Promise(resolve => {
+
+        let removeListenerAndResolve = (event) => {
+            if(event.target === elem) {
+                document.body.removeEventListener("click", removeListenerAndResolve);
+                resolve(elem);
+            }
+        } 
+
+        document.body.addEventListener("click", removeListenerAndResolve);
+
+        elem.click();
+        setTimeout( ()=>{} , 0);
+      });
+  }
