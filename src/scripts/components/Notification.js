@@ -2,12 +2,30 @@ export default class Notification {
     constructor() {
     }
 
-    init(title, description, actionButtom, options) {
-        if(this.container && this.container.parentElement) {
-            this.container.parentNode.removeChild(this.container);
-        }
+    init() {
         this.container = document.createElement('div');
         this.container.className = 'ref-container';
+        this.container.style.display = 'none';
+        return this.container;
+    }
+
+    update(title, description, actionButtom, options) {
+        var parentElement = false;
+        if(this.container && this.container.parentElement) {
+            parentElement = this.container.parentElement;
+            this.container.parentNode.removeChild(this.container);
+        }
+        while (this.container.firstChild) {
+            this.container.removeChild(this.container.firstChild);
+        }
+        this.setupContainer(title, description, actionButtom, options);
+        if(parentElement) parentElement.appendChild(this.container);
+        else document.body.appendChild(this.container);
+        this.container.style.display = 'block';
+        return this.container;
+    }
+
+    setupContainer(title, description, actionButtom, options) {
         if(title) {
             this.title = this.buildTitle(title);
             this.container.appendChild(this.title);
@@ -29,7 +47,6 @@ export default class Notification {
             });
             this.container.appendChild(this.optionsContainer);
         }
-        return this.container;
     }
 
     get() {
@@ -37,7 +54,7 @@ export default class Notification {
     }
 
     remove() {
-        this.container.parentElement.removeChild(this.container);
+        this.container.style.display = 'none';
     }
 
     buildActionButton(props) {
