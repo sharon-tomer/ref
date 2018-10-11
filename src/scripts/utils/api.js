@@ -1,6 +1,6 @@
 export default {
-    code: {
-        new: '/codes',
-        get: '/codes'
-    }
-}
+	referrals: {
+		new: '/referrals',
+		get: '/referrals'
+	}
+};

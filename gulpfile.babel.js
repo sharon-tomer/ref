@@ -6,6 +6,7 @@ import source from 'vinyl-source-stream';
 import buffer from 'vinyl-buffer';
 import preprocessify from 'preprocessify';
 import gulpif from 'gulp-if';
+import 'babel-polyfill';
 
 const $ = require('gulp-load-plugins')();
 const eslint = require('gulp-eslint');
@@ -147,7 +148,11 @@ function buildJS(target) {
 			entries: 'src/scripts/' + file,
 			debug: true
 		})
-			.transform('babelify', { presets: ['es2015'] })
+			.transform('babelify', { 
+				presets: [
+					'stage-2'
+				] 
+			})
 			.transform(preprocessify, {
 				includeExtensions: ['.js'],
 				context: context

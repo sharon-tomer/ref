@@ -20,7 +20,7 @@ class Referral {
 			this.buildAddCodePrompt(request.service);
 			sendResponse('success'); 
 			break;
-		case ACTIONS.SCRAPE_CODE:
+		case ACTIONS.SCRAPE_REFERRAL_INFO:
 			let code = this.scrapeTextByXpath(request.service.CODE_XPATH);
 			sendResponse({code});
 			break;

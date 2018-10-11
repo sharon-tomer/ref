@@ -1,13 +1,15 @@
 import ext from './utils/ext';
 import {getServiceFromUrl} from './utils/urls';
 import {ACTIONS, APP_ID} from './utils/constants';
-import {createNewTab, sendMessageToTab} from './utils/browser';
+import {createNewTab} from './utils/browser';
 import api from './utils/api';
-import {postData, getData} from './utils/xhr';
-require('dotenv').config();
+import {postData} from './utils/xhr';
+import ReferralManager from './modules/ReferralManager';
 
 var endpoint = 'http://localhost:3000';
-        
+var userid = 'test_user_id';
+var referralManager = new ReferralManager(userid); 
+
 ext.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
 	let {status} = changeInfo;  
 	if(status !== 'complete') return;  
@@ -26,16 +28,21 @@ ext.runtime.onMessage.addListener((request, sender, sendResponse) => {
 		console.log('ref' + 'got request:', request.action);
 		switch (request.action) {
 		case ACTIONS.ADD_NEW_CODE:  
-			getNewCode(request.service)
-				.then(result => sendResponse({success: !!result, code: result}));
+			referralManager.setUserReferralInfo(request.service)
+				.then(result => sendResponse({success: !!result, ...result}));
 			break;
 		case ACTIONS.NAV_TO_REF_LINK:
 			navToRefLink(sender.tab.id, request.service)
 				.then(response => sendResponse(response));
 			break;
 		case ACTIONS.GET_CODE:
-			fetchCodeForService(request.service)
-				.then(response => sendResponse(response));
+			if(request.friendId) {
+				referralManager.getReferralInfoFromAFriend(request.friendId, request.service)
+					.then(sendResponse);
+			} else {
+				referralManager.getReferralInfoFromAStranger(request.service)
+					.then(sendResponse);
+			}
 			break;
 		default: 
 			throw 'Unknown action in message: ' + request;
@@ -43,45 +50,6 @@ ext.runtime.onMessage.addListener((request, sender, sendResponse) => {
 		return true; 
 	}
 }); 
-
-async function getNewCode(service) {
-	console.log('ref' + 'getting code...');
-	let newTab = await createNewTab(service.CODE_URL, false);
-	let response = await sendScrapingRequest(newTab.id, service);
-	console.log('ref' + 'got - new tab:', newTab, 'response:', response, 'closing tab...');
-	ext.tabs.remove(newTab.id);
-	console.log('ref' + 'tab closed.');
-	if(response && response.code)
-		return await saveNewCode(response.code, service.ID);
-	else return false;
-}
-
-async function fetchCodeForService(service) {
-	return getData(endpoint + api.code.get, {serviceid: service.ID});
-}
-
-async function sendScrapingRequest(tabId, service) {
-	let message = {type: APP_ID, action: ACTIONS.SCRAPE_CODE, service};
-	console.log('ref' + 'sending scraping request to tab ', tabId, 'for service: ', service);
-	return sendMessageToTab(tabId, message);
-}
-
-async function saveNewCode(code, serviceid) {
-	if(typeof code !== 'string') {
-		console.log('ref' + 'couldn\'t scrape the code');
-		return false;
-	}
-	console.log('ref' + 'got code:', code);
-	return postData(endpoint + api.code.new, {code, serviceid})
-		.then(res => {
-			console.log('ref' + 'server replyed with: ', res);
-			if(res.code) return res.code;
-			else {
-				console.log('ref' + 'error posting new code: ' + res.error || 'unspecified error');
-				return false; 
-			}
-		});
-}
 
 async function getRandomRefUrl(serviceid, code) {
 	if(typeof code !== 'string') {

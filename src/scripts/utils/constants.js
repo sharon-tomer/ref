@@ -6,7 +6,7 @@ export const ACTIONS = {
 	PROMPT_TO_GET_REWARD_ON_REGISTERATION: 'prompt_to_get_reward_on_registeration',
 	ADD_NEW_CODE: 'add_new_code',
 	GET_CODE: 'get_code',
-	SCRAPE_CODE: 'scrape_code',
+	SCRAPE_REFERRAL_INFO: 'scrape_referral_info',
 	OPT_OUT: 'opt_out',
 	HAS_ACCOUNT: 'has_account',
 	NAV_TO_REF_LINK: 'nav_to_referral_link'

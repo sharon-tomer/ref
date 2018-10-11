@@ -105,3 +105,7 @@ export async function asyncClick(elem) {
 		setTimeout( ()=>{} , 0);
 	});
 }
+
+export function closeTab(tabId) {
+	ext.tabs.remove(tabId);
+}
