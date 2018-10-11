@@ -1,5 +1,6 @@
 export default class Service {
-	constructor() {
-        
+	constructor(serviceProps) {
+		this.id = serviceProps.id;
+		
 	}
 }

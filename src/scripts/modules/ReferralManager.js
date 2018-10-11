@@ -10,10 +10,10 @@ export default class ReferralManager {
 	}
 
 	async setUserReferralInfo(service) {
-		let tabForScrapping = await this.createNewTabForScraping();
+		let tabForScrapping = await this.createNewTabForScraping(service.CODE_URL);
 		let scrappingResult = await this.sendScrapingRequestToTab(tabForScrapping.id, service);
-		closeTab(tabForScrapping.id);
-		return await this.saveNewReferral(scrappingResult);
+		// closeTab(tabForScrapping.id);
+		return await this.saveNewReferral(scrappingResult, service);
 	}
 
 	async getReferralInfoFromAFriend(friendUserId, service) {
@@ -33,7 +33,7 @@ export default class ReferralManager {
 		return sendMessageToTab(tabId, message);
 	}
 
-	async saveNewReferral(referral) {
+	async saveNewReferral(referral, service) {
 		let payload = {};
 		if(!referral) {
 			return false;
@@ -41,7 +41,7 @@ export default class ReferralManager {
 
 		if(referral.code) payload.code = referral.code;
 		if(referral.link) payload.link = referral.link;
-		payload.serviceid = this.service.id;
+		payload.serviceid = service.ID;
 		payload.userid = this.userid;
 
 		return postData(this.endpoint + api.referrals.new, payload)
