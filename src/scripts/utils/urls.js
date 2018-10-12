@@ -1,10 +1,13 @@
-import {SERVICES} from './constants';
+import servicesProps from '../utils/services-props';
+import Service from '../modules/Service';
+
 export function getServiceFromUrl(url) {
+
 	if(!url) return false;
-	for (var key in SERVICES) {
+	for (var serviceId in servicesProps) {
 		let rootDomain = extractRootDomain(url);
-		if(rootDomain.match(SERVICES[key].ROOT_DOMAIN)) {
-			return SERVICES[key];
+		if(rootDomain.match(servicesProps[serviceId].ROOT_DOMAIN)) {
+			return new Service(serviceId, servicesProps[serviceId]);
 		}      
 	}
 

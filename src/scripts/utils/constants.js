@@ -1,11 +1,11 @@
 export const APP_ID = 'ref-extension';
 
 export const ACTIONS = {
-	PROMPT_TO_ADD_CODE: 'prompt-to-add-code',
+	PROMPT_TO_SET_REFERRAL_INFO: 'prompt-to-add-referral-info',
 	PROMPT_TO_GET_REWARD: 'prompt-to-get-reward',
 	PROMPT_TO_GET_REWARD_ON_REGISTERATION: 'prompt_to_get_reward_on_registeration',
-	ADD_NEW_CODE: 'add_new_code',
-	GET_CODE: 'get_code',
+	SET_REFERRAL_INFO: 'add_new_referral_info',
+	GET_REFERRAL: 'get_referral',
 	SCRAPE_REFERRAL_INFO: 'scrape_referral_info',
 	OPT_OUT: 'opt_out',
 	HAS_ACCOUNT: 'has_account',
@@ -15,7 +15,7 @@ export const ACTIONS = {
 export const COPY = {
 	UI: {
 		PROMPTS: {
-			ADD_CODE: {
+			ADD_REFERRAL: {
 				TITLE_PRE: 'Want to share your ',
 				TITLE_MID: ' referral code and ',
 				TITLE_POST: ' for every person who uses it?',
@@ -51,34 +51,17 @@ export const COPY = {
 			OPT_OUT: {
 				DESCRIPTION: 'Got it.' 
 			},
-			CODE_USED: {
+			REFERRAL_WAS_USED: {
 				TITLE: 'And... Done!',
 				DESCRIPTION1: 'We applied the referral code.\n',
 				DESCRIPTION2: 'You will now get the reward as promised.',
 				CLOSE_BUTTON: 'Sweet!'
 			},
-			CODE_USE_FAILED: {
+			REFERRAL_USE_FAILED: {
 				TITLE: 'Darn it! Something went wrong when we were trying to get your referral code. Please try again later',
 				CLOSE_BUTTON: 'I forgive you!'
 			}
 		}
-	}
-};
-
-export const SERVICES = {
-	uber: {
-		NAME: 'Uber',
-		ID: 'uber',
-		ROOT_DOMAIN: 'uber.com',
-		MEMBER_URL_REGEX: /^.*\briders.uber.com\b.*$/,
-		NON_MEMBER_URL_REGEX:  /^.*\b(auth).uber.com\b.*$/,
-		REGISTERATION_FORM_REGEX: /^(.*)(auth\.uber\.com\/login)(.*?)(uber_client_name=riderSignUp)(.*?)$/,
-		CODE_URL: 'https://riders.uber.com/invite',
-		CODE_XPATH: '//div/div[contains(text(), \'https://www.uber.com/invite/\')]',
-		COPY: {
-			REFER_REWARD: 'free rides every time it is redeemed',
-			REFERRED_REWARD: 'your first ride for free'
-		},
 	}
 };
 

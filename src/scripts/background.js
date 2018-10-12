@@ -5,16 +5,19 @@ import {createNewTab} from './utils/browser';
 import api from './utils/api';
 import {postData} from './utils/xhr';
 import ReferralManager from './modules/ReferralManager';
+import storage from './utils/storage';
 
 class BackgroundProcess {
 	constructor() {
 		this.endpoint = 'http://localhost:3000';
 		this.userid = 'test_user_id';
 		this.referralManager = new ReferralManager(this.userid); 
+		this.currentSessionServices = {};
 	}
 
 	init() {
 		this.setupListeners();
+		this.setupStorage();
 	}
 
 	setupListeners() {
@@ -28,9 +31,10 @@ class BackgroundProcess {
 		let url = tab.url;
 		let service = getServiceFromUrl(url);
 		if(service) {
+			this.currentSessionServices[service.id] = service;
 			let promptMessage = this.shouldPromptInTab(url, service);
 			if(!promptMessage) return;
-			console.log('ref' + 'prompting to add code in service:', service);
+			console.log('ref' + 'prompting to add referral for service:', service);
 			chrome.tabs.sendMessage(tabId, promptMessage, () => console.log('ref' + 'todo: handle response from contentscript'));
 		}
 	}
@@ -38,15 +42,18 @@ class BackgroundProcess {
 	onMessageFromTab(request, sender, sendResponse) {
 		if(request.type === APP_ID) {
 			switch (request.action) {
-			case ACTIONS.ADD_NEW_CODE:  
+
+			case ACTIONS.SET_REFERRAL_INFO:  
 				this.referralManager.setUserReferralInfo(request.service)
 					.then(result => sendResponse({success: !!result, ...result}));
 				break;
+
 			case ACTIONS.NAV_TO_REF_LINK:
 				this.navToRefLink(sender.tab.id, request.service)
 					.then(response => sendResponse(response));
 				break;
-			case ACTIONS.GET_CODE:
+
+			case ACTIONS.GET_REFERRAL:
 				if(request.friendId) {
 					this.referralManager.getReferralInfoFromAFriend(request.friendId, request.service)
 						.then(sendResponse);
@@ -55,25 +62,21 @@ class BackgroundProcess {
 						.then(sendResponse);
 				}
 				break;
+
 			default: 
 				throw 'Unknown action in message: ' + request;
 			} 
+
 			return true; 
 		}
 	}
 
-	async getRandomRefUrl(serviceid, code) {
-		if(typeof code !== 'string') {
-			console.log('ref' + 'couldn\'t scrape the code');
-			return false;
-		}
-		console.log('ref' + 'got code:', code);
-		return postData(this.endpoint + api.code.new, {code, serviceid})
+	async getRandomRefUrl(serviceid) { //todo fix and test
+		return postData(this.endpoint + api.referrals.get, {serviceid})
 			.then(res => {
-				console.log('ref' + 'server replyed with: ', res);
-				if(res.code) return res.code;
+				if(res.code || res.link) return res;
 				else {
-					console.log('ref' + 'error posting new code: ' + res.error || 'unspecified error');
+					console.log('ref' + 'error getting referral info from server: ' + res.error || 'unspecified error');
 					return false; 
 				}
 			});
@@ -81,11 +84,11 @@ class BackgroundProcess {
 
 	shouldPromptInTab(url, service) {
 		let res = false;
-		if(url.match(service.REGISTERATION_FORM_REGEX)) {
+		if(url.match(service.urls.registeration_form_regex)) {
 			res = {type: APP_ID, action: ACTIONS.PROMPT_TO_GET_REWARD_ON_REGISTERATION, service};
-		} else if(url.match(service.MEMBER_URL_REGEX)){
-			res = {type: APP_ID, action: ACTIONS.PROMPT_TO_ADD_CODE, service};
-		} else if(url.match(service.NON_MEMBER_URL_REGEX)) {
+		} else if(url.match(service.urls.member_url_regex)){
+			res = {type: APP_ID, action: ACTIONS.PROMPT_TO_SET_REFERRAL_INFO, service};
+		} else if(url.match(service.urls.non_member_url_regex)) {
 			res = {type: APP_ID, action: ACTIONS.PROMPT_TO_GET_REWARD, service};
 		}
 		return res;
@@ -95,6 +98,17 @@ class BackgroundProcess {
 	navToRefLink(service) {
 		this.getRandomRefUrl(service.id)
 			.then(url => createNewTab(url, true));
+	}
+
+	async setupStorage() {
+		let servicesStorage = await storage.get('services');
+		if(!servicesStorage) {
+			await storage.set({'services': {}});
+			servicesStorage = {};
+		}
+		this.servicesStorage = servicesStorage;
+
+		//todo: user storage
 	}
 }
 

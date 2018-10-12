@@ -10,18 +10,18 @@ export default class ReferralManager {
 	}
 
 	async setUserReferralInfo(service) {
-		let tabForScrapping = await this.createNewTabForScraping(service.CODE_URL);
-		let scrappingResult = await this.sendScrapingRequestToTab(tabForScrapping.id, service);
-		// closeTab(tabForScrapping.id);
-		return await this.saveNewReferral(scrappingResult, service);
+		let tabForscraping = await this.createNewTabForScraping(service.urls.referral_url);
+		let scrapingResult = await this.sendScrapingRequestToTab(tabForscraping.id, service);
+		closeTab(tabForscraping.id);
+		return await this.saveNewReferral(scrapingResult, service);
 	}
 
 	async getReferralInfoFromAFriend(friendUserId, service) {
-		return getData(this.endpoint + api.referrals.get, {serviceid: service.ID, friendUserId});
+		return getData(this.endpoint + api.referrals.get, {serviceid: service.id, friendUserId});
 	}
 
 	async getReferralInfoFromAStranger(service) {
-		return getData(this.endpoint + api.referrals.get, {serviceid: service.ID});
+		return getData(this.endpoint + api.referrals.get, {serviceid: service.id});
 	}
 
 	async createNewTabForScraping(url) {
@@ -30,7 +30,7 @@ export default class ReferralManager {
 
 	async sendScrapingRequestToTab (tabId, service) {
 		let message = {type: APP_ID, action: ACTIONS.SCRAPE_REFERRAL_INFO, service};
-		return sendMessageToTab(tabId, message);
+		return await sendMessageToTab(tabId, message);
 	}
 
 	async saveNewReferral(referral, service) {
@@ -41,7 +41,7 @@ export default class ReferralManager {
 
 		if(referral.code) payload.code = referral.code;
 		if(referral.link) payload.link = referral.link;
-		payload.serviceid = service.ID;
+		payload.serviceid = service.id;
 		payload.userid = this.userid;
 
 		return postData(this.endpoint + api.referrals.new, payload)
@@ -49,7 +49,7 @@ export default class ReferralManager {
 				console.log('ref' + 'server replyed with: ', res);
 				if(res.code || res.link) return {code: res.code, link: res.link};
 			}).catch(err => {
-				console.log('ref' + 'error posting new code: ' + err || 'unspecified error');
+				console.log('ref' + 'error posting new referral info: ' + err || 'unspecified error');
 				return false; 
 			});
 	}

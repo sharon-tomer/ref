@@ -1,9 +1,10 @@
 import ext from './utils/ext';
 import Notification from './components/Notification';
 import {ACTIONS, COPY, APP_ID} from './utils/constants';
-import {sendMessageToBackground, findByXpath} from './utils/browser';
-import Navigator from './utils/navigator';
-import serviceActions from './utils/serviceactions';
+import {sendMessageToBackground} from './utils/browser';
+import Navigator from './modules/navigator';
+import serviceActions from './utils/scraping-recipes';
+import scrapingRecipes from './utils/scraping-recipes';
 
 class Referral {
 	constructor(){
@@ -16,15 +17,15 @@ class Referral {
 	onRequest(request, sender, sendResponse) {
 		if(!request.type === APP_ID) return;
 		switch (request.action) {
-		case ACTIONS.PROMPT_TO_ADD_CODE:
-			this.buildAddCodePrompt(request.service);
+		case ACTIONS.PROMPT_TO_SET_REFERRAL_INFO:
+			this.buildAddReferralPrompt(request.service);
 			sendResponse('success'); 
 			break;
 		case ACTIONS.SCRAPE_REFERRAL_INFO:
-			let code = this.scrapeTextByXpath(request.service.CODE_XPATH);
-			sendResponse({code});
+			this.scrapeReferralInfo(request.service)
+				.then(sendResponse);
 			break;
-		case ACTIONS.PROMPT_TO_GET_REWARD_ON_REGISTERATION:
+		case ACTIONS.PROMPT_TO_GET_REWARD_ON_REGISTERATION: 
 			this.buildGetRewardOnRegisterationPrompt(request.service);
 			sendResponse('success'); 
 			break;
@@ -39,18 +40,18 @@ class Referral {
 		return true;
 	}
   
-	buildAddCodePrompt (service) {
+	buildAddReferralPrompt (service) {
 		let promptDescription = 
-      `${COPY.UI.PROMPTS.ADD_CODE.TITLE_PRE}` + 
-      `${service.NAME}` + 
-      `${COPY.UI.PROMPTS.ADD_CODE.TITLE_MID}` + 
-      `<b>${service.COPY.REFER_REWARD}</b>?`;
+			`${COPY.UI.PROMPTS.ADD_REFERRAL.TITLE_PRE}` + 
+			`${service.name}` + 
+			`${COPY.UI.PROMPTS.ADD_REFERRAL.TITLE_MID}` + 
+			`<b>${service.copy.REFER_REWARD}</b>?`;
 		let promptActionButton = {
-			onclick: () => this.onAddCodeClick(service), 
-			text: COPY.UI.PROMPTS.ADD_CODE.ACTIVATE_NOW
+			onclick: () => this.onAddReferralClick(service), 
+			text: COPY.UI.PROMPTS.ADD_REFERRAL.ACTIVATE_NOW
 		};
 		let promptOptions = [{
-			text: COPY.UI.PROMPTS.ADD_CODE.ACTIVATE_LATER, 
+			text: COPY.UI.PROMPTS.ADD_REFERRAL.ACTIVATE_LATER, 
 			onclick: () => this.notification.remove()
 		}]; 
   
@@ -59,13 +60,13 @@ class Referral {
 
 	buildGetRewardPrompt(service) {
 		let promptDescription = 
-      `${COPY.UI.PROMPTS.GET_REWARD.TITLE_PRE}` + 
-      `${service.NAME}` + 
-      `${COPY.UI.PROMPTS.GET_REWARD.TITLE_MID}` + 
-      `<b>${service.COPY.REFERRED_REWARD}</b>` +
-      `${COPY.UI.GET_REWARD.TITLE_POST}`;
+			`${COPY.UI.PROMPTS.GET_REWARD.TITLE_PRE}` + 
+			`${service.name}` + 
+			`${COPY.UI.PROMPTS.GET_REWARD.TITLE_MID}` + 
+			`<b>${service.copy.REFERRED_REWARD}</b>` +
+			`${COPY.UI.GET_REWARD.TITLE_POST}`;
 		let promptActionButton = {
-			onclick: () => this.onAddCodeClick(service), 
+			onclick: () => this.onAddReferralClick(service), 
 			text: COPY.UI.PROMPTS.GET_REWARD.ACTIVATE_NOW
 		};
 		let promptOptions = [
@@ -90,11 +91,11 @@ class Referral {
 
 	buildGetRewardOnRegisterationPrompt(service) {
 		let promptDescription = 
-      `${COPY.UI.PROMPTS.GET_REWARD_ON_REGISTERATION.TITLE_PRE}` + 
-      `${service.COPY.REFERRED_REWARD}` + 
-      `${COPY.UI.PROMPTS.GET_REWARD.TITLE_POST}`;
+			`${COPY.UI.PROMPTS.GET_REWARD_ON_REGISTERATION.TITLE_PRE}` + 
+			`${service.copy.REFERRED_REWARD}` + 
+			`${COPY.UI.PROMPTS.GET_REWARD.TITLE_POST}`;
 		let promptActionButton = {
-			onclick: () => this.handleApplyCode(service), 
+			onclick: () => this.handleApplyReferral(service), 
 			text: COPY.UI.PROMPTS.GET_REWARD.ACTIVATE_NOW
 		};
 		let promptOptions = [
@@ -107,14 +108,14 @@ class Referral {
 		return this.notification.update(false, promptDescription, promptActionButton, promptOptions);
 	}
 
-	buildCodeRetrievedPrompt(isSuccessful, code) {
+	buildReferralInfoWasSetPrompt(isSuccessful, codeOrLink) {
 		let promptDescription, promptOptions, promptTitle;
 		if(isSuccessful) {
 			promptTitle = COPY.UI.PROMPTS.ADDED_SUCCESSFULLY.TITLE;
 			promptDescription = 
-        `${COPY.UI.PROMPTS.ADDED_SUCCESSFULLY.DESCRIPTION1}` +
-        `<b>${code}</b>` + 
-        `${COPY.UI.PROMPTS.ADDED_SUCCESSFULLY.DESCRIPTION2}`;
+				`${COPY.UI.PROMPTS.ADDED_SUCCESSFULLY.DESCRIPTION1}` +
+				`<b>${codeOrLink}</b>` + 
+				`${COPY.UI.PROMPTS.ADDED_SUCCESSFULLY.DESCRIPTION2}`;
 			promptOptions = [{
 				text: COPY.UI.PROMPTS.ADDED_SUCCESSFULLY.CLOSE_BUTTON, 
 				onclick: () => this.notification.remove()
@@ -129,31 +130,31 @@ class Referral {
 		return this.notification.update(promptTitle, promptDescription, false, promptOptions);
 	}
 
-	buildCodeUsedPrompt(isSuccessful) {
+	buildReferralWasUsedPrompt(wasSuccessful) {
 		let promptDescription, promptOptions, promptTitle;
-		if(isSuccessful) {
-			promptTitle = COPY.UI.PROMPTS.CODE_USED.TITLE;
+		if(wasSuccessful) {
+			promptTitle = COPY.UI.PROMPTS.REFERRAL_WAS_USED.TITLE;
 			promptDescription = 
-        `${COPY.UI.PROMPTS.CODE_USED.DESCRIPTION1}` +
-        `${COPY.UI.PROMPTS.CODE_USED.DESCRIPTION2}`;
+				`${COPY.UI.PROMPTS.REFERRAL_WAS_USED.DESCRIPTION1}` +
+				`${COPY.UI.PROMPTS.REFERRAL_WAS_USED.DESCRIPTION2}`;
 			promptOptions = [{
-				text: COPY.UI.PROMPTS.CODE_USED.CLOSE_BUTTON, 
+				text: COPY.UI.PROMPTS.REFERRAL_WAS_USED.CLOSE_BUTTON, 
 				onclick: () => this.notification.remove()
 			}];
 		} else {
-			promptDescription = `${COPY.UI.PROMPTS.CODE_USE_FAILED.TITLE}`;
+			promptDescription = `${COPY.UI.PROMPTS.REFERRAL_USE_FAILED.TITLE}`;
 			promptOptions = [{
-				text: COPY.UI.PROMPTS.CODE_USE_FAILED.CLOSE_BUTTON, 
+				text: COPY.UI.PROMPTS.REFERRAL_USE_FAILED.CLOSE_BUTTON, 
 				onclick: () => this.notification.remove()
 			}];
 		}
 		return this.notification.update(promptTitle, promptDescription, false, promptOptions);
 	}
   
-	onAddCodeClick(service) {
+	onAddReferralClick(service) {
 		this.notification.update(false, '<i class="spinner"></i>', false, false);
-		sendMessageToBackground({action: ACTIONS.ADD_NEW_CODE, service})
-			.then(this.handleAddCodeResponse.bind(this));
+		sendMessageToBackground({action: ACTIONS.SET_REFERRAL_INFO, service})
+			.then(this.handleSetReferralInfoResponse.bind(this));
 	}
 
 	onOptOutClick(service) {
@@ -161,48 +162,56 @@ class Referral {
 		sendMessageToBackground({action: ACTIONS.OPT_OUT, service});
 	}
 
-	onNavToRewardLinkClick(service) {
-		sendMessageToBackground({action: ACTIONS.NAV_TO_REF_LINK, service})
-			.then(code => this.injectCode(service, code))
-			.then(this.promptCodeAdded);
-	}
+	// onNavToRewardLinkClick(service) { //todo
+	// 	sendMessageToBackground({action: ACTIONS.NAV_TO_REF_LINK, service})
+	// 		// .then(code => this.injectCode(service, code))
+	// 		// .then(this.promptCodeAdded);
+	// }
 
 	onHaveAccountClick() {
 		// todo
 		// sendMessageToBackground({action: ACTIONS.HAS_ACCOUNT, service})
-		//   .then(this.handleAddCodeResponse.bind(this));
+		//   .then(this.handleSetReferralInfoResponse.bind(this));
 	}
   
-	handleAddCodeResponse(response) {
-		console.log('ref' + 'got code response from background: ', response);
+	handleSetReferralInfoResponse(response) {
+		console.log('ref' + 'got set referral info response from server: ', response);
 		if(response.success) {
-			this.buildCodeRetrievedPrompt(true, response.code);
+			this.buildReferralInfoWasSetPrompt(true, response.code || response.link);
 		} else {
-			this.buildCodeRetrievedPrompt(false);
-			console.log('ref' + 'Failed fetching code.');
+			this.buildReferralInfoWasSetPrompt(false);
+			console.log('ref' + 'Failed fetching referral info.');
 		}
 	}
   
-	scrapeTextByXpath(xpath) {
-		var elem = findByXpath(xpath);
-		console.log('ref' + 'elem found:', elem);
-		if(elem) return elem.innerText;
+	async scrapeReferralInfo(service) {
+		let scrapedInfo = {};
+		let serviceGetRecipes = scrapingRecipes.get[service.id];
+		if(serviceGetRecipes.code) {
+			let scrapeCodeRecipe = serviceGetRecipes.code();
+			scrapedInfo.code = await this.navigator.exec(scrapeCodeRecipe);
+		}
+		if(serviceGetRecipes.link) {
+			let scrapeLinkRecipe = serviceGetRecipes.link();
+			scrapedInfo.link = await this.navigator.exec(scrapeLinkRecipe);
+		}
+		if(scrapedInfo.code || scrapedInfo.link) return scrapedInfo;
 		return false;
 	}
 
-	async handleApplyCode(service) {
-		let response = await this.getCodeFromBackground(service);
-		this.applyCode(service.ID, response.code)
-			.then(success => this.buildCodeUsedPrompt(success));
+	async handleApplyReferral(service) {
+		let response = await this.getReferralToUse(service);
+		this.applyCode(service.id, response.code)
+			.then(success => this.buildReferralWasUsedPrompt(success));
 	}
 
-	async applyCode(serviceId, code) {
-		let codeInjectionActions = serviceActions[serviceId].buildCodeInjectionActions(code);
-		return this.navigator.exec(codeInjectionActions, document);
+	async applyCode(serviceId, codeToInject) {
+		let codeInjectionActions = serviceActions.set[serviceId].code(codeToInject);
+		return this.navigator.exec(codeInjectionActions);
 	}
 
-	async getCodeFromBackground(service) {
-		return sendMessageToBackground({action: ACTIONS.GET_CODE, service});
+	async getReferralToUse(service) {
+		return sendMessageToBackground({action: ACTIONS.GET_REFERRAL, service});
 	}
 }
 
